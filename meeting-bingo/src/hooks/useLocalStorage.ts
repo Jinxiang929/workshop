@@ -9,14 +9,17 @@ export function useLocalStorage<T>(
   key: string,
   version: number,
   initialValue: T,
+  // Optional one-time transform applied to the loaded value at mount only
+  // (e.g. resume-vs-reset reconciliation). NOT applied on later updates.
+  migrate?: (loaded: T) => T,
 ): [T, (value: T | ((prev: T) => T)) => void, () => void] {
   const storageKey = `${key}:v${version}`;
 
   const [value, setValue] = useState<T>(() => {
     try {
       const raw = localStorage.getItem(storageKey);
-      if (raw === null) return initialValue;
-      return JSON.parse(raw) as T;
+      const loaded = raw === null ? initialValue : (JSON.parse(raw) as T);
+      return migrate ? migrate(loaded) : loaded;
     } catch {
       return initialValue;
     }
