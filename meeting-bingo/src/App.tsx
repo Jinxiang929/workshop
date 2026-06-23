@@ -47,9 +47,11 @@ export default function App() {
     'meeting-bingo',
     STORAGE_VERSION,
     { screen: 'landing', game: IDLE_GAME },
+    // Reconcile ONCE at mount (resume in-progress, else reset). Must not run
+    // per-render, or screen transitions get bounced back to landing.
+    reconcile,
   );
-  // Reconcile persisted state on each render (resume in-progress, else reset).
-  const { screen, game } = reconcile(persisted);
+  const { screen, game } = persisted;
 
   const setScreen = useCallback(
     (next: Screen) => setPersisted((prev) => ({ ...prev, screen: next })),
